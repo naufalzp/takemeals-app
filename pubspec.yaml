@@ -1,0 +1,32 @@
+name: takemeals
+description: "A new Flutter project."
+publish_to: 'none'
+version: 0.1.0
+
+environment:
+  sdk: ^3.5.3
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  provider: ^6.1.2
+  http: ^1.2.2
+  shared_preferences: ^2.3.2
+  flutter_svg: ^2.0.10+1
+  cupertino_icons: ^1.0.8
+  form_field_validator: ^1.1.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+
+flutter:
+  uses-material-design: true
+
+  assets: 
+    - assets/images/
+    - assets/icons/
+    - assets/illustrations/
