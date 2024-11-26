@@ -17,20 +17,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Future<void> _logout() async {
     final success = await authService.logout();
+    if (!mounted) return; 
+
     if (success) {
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(
           builder: (context) => const LoginScreen(),
         ),
-        (_) => true,
+        (_) => false, 
       );
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("An error occurred"),
-        ),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("An error occurred"),
+          ),
+        );
+      }
     }
   }
 
