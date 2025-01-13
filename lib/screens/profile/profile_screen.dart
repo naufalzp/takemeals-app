@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:takemeals/providers/user_provider.dart';
 import 'package:takemeals/screens/auth/login_screen.dart';
+import 'package:takemeals/screens/profile/qr_scanner_screen.dart';
 import 'package:takemeals/services/auth_service.dart';
 import 'package:takemeals/utils/constants.dart';
 
@@ -17,15 +18,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Future<void> _logout() async {
     final success = await authService.logout();
-    if (!mounted) return; 
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+
+    if (!mounted) return;
 
     if (success) {
+      userProvider.clearUser();
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(
           builder: (context) => const LoginScreen(),
         ),
-        (_) => false, 
+        (_) => false,
       );
     } else {
       if (mounted) {
@@ -50,6 +54,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: Colors.white,
         title: const Text(
           'Profile',
           style: TextStyle(
@@ -58,44 +63,69 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
         ),
         centerTitle: true,
-        elevation: 0,
+        elevation: 1,
         automaticallyImplyLeading: false,
       ),
       body: user == null
-          ? const Center(child: Text('No user data available'))
+          ? const Center(
+              child: Text(
+                'No user data available',
+                style: TextStyle(fontSize: 16, color: Colors.grey),
+              ),
+            )
           : SingleChildScrollView(
               padding: const EdgeInsets.all(16.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  CircleAvatar(
-                    radius: 50,
-                    backgroundColor: primaryColor.withOpacity(0.2),
-                    child: Icon(
-                      Icons.person,
-                      size: 50,
-                      color: primaryColor,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    user.name ?? '',
-                    style: const TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    user.email ?? '',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.grey[700],
+                  // Profile Header
+                  Container(
+                    alignment: Alignment.center,
+                    child: Column(
+                      children: [
+                        CircleAvatar(
+                          radius: 50,
+                          backgroundColor: Colors.white,
+                          child: Container(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  primaryColor.withOpacity(0.6),
+                                  primaryColor,
+                                ],
+                              ),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.person,
+                              size: 50,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          user.name ?? '-',
+                          style: const TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          user.email ?? '-',
+                          style: const TextStyle(
+                            fontSize: 16,
+                            color: Colors.grey,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                   const Divider(height: 40, thickness: 1.5),
-                  // Profile Information
+
+                  // Profile Information Section
                   Card(
                     margin: EdgeInsets.zero,
                     elevation: 2,
@@ -104,19 +134,60 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                     child: Padding(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 16.0, vertical: 20.0),
+                        horizontal: 16.0,
+                        vertical: 20.0,
+                      ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          _buildProfileInfoRow(
-                              Icons.phone, 'Phone', user.phone),
+                          const Text(
+                            "Profile Details",
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black,
+                            ),
+                          ),
                           const SizedBox(height: 16),
-                          _buildProfileInfoRow(Icons.person_pin, 'Is Partner',
-                              user.isPartner == 1 ? 'Yes' : 'No'),
+                          _buildProfileInfoRow(
+                            Icons.phone,
+                            'Phone',
+                            user.phone,
+                          ),
+                          const Divider(height: 32, thickness: 1),
+                          _buildProfileInfoRow(
+                            Icons.person_pin,
+                            'Is Partner',
+                            user.isPartner == true ? 'Yes' : 'No',
+                          ),
+                          const SizedBox(height: 16),
+                          if (user.isPartner == true)
+                            SizedBox(
+                              width: double.infinity,
+                              child: ElevatedButton.icon(
+                                style: ElevatedButton.styleFrom(
+                                    backgroundColor: primaryColor),
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          const QRScannerScreen(),
+                                    ),
+                                  );
+                                },
+                                icon: const Icon(Icons.qr_code_scanner),
+                                label: const Text(
+                                  'Scan Order QR',
+                                  style: TextStyle(fontSize: 16),
+                                ),
+                              ),
+                            ),
                         ],
                       ),
                     ),
                   ),
+
                   const SizedBox(height: 40),
                   // Logout Button
                   SizedBox(
@@ -124,7 +195,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         backgroundColor: primaryColor,
-                        padding: const EdgeInsets.symmetric(horizontal: 24),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
                       ),
                       onPressed: _logout,
                       child: const Text(
