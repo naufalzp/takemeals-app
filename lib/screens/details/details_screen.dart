@@ -16,7 +16,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
 
   Widget _buildDetailRow(String title, String value) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      padding: const EdgeInsets.symmetric(vertical: 4.0),
       child: Row(
         children: [
           Text(
