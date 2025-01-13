@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 import 'package:takemeals/models/product_model.dart';
 import 'package:takemeals/providers/product_provider.dart';
@@ -7,7 +6,6 @@ import 'package:takemeals/screens/details/details_screen.dart';
 import 'package:takemeals/utils/constants.dart';
 import 'package:takemeals/widgets/skeleton/big_card_skeleton.dart';
 import 'package:takemeals/widgets/cards/big/restaurant_info_big_card.dart';
-import 'package:takemeals/demo_data.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
@@ -18,7 +16,6 @@ class SearchScreen extends StatefulWidget {
 
 class _SearchScreenState extends State<SearchScreen> {
   String _searchQuery = '';
-  bool _showSearchResult = false;
   bool _isLoading = true;
 
   @override

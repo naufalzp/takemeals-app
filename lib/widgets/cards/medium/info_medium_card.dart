@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:takemeals/utils/constants.dart';
 import 'package:takemeals/widgets/rating.dart';
-import 'package:takemeals/widgets/small_dot.dart';
 
 class InfoMediumCard extends StatelessWidget {
   const InfoMediumCard({

@@ -1,9 +1,7 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:takemeals/screens/auth/register_screen.dart';
 import 'package:takemeals/screens/auth/widgets/login_form.dart';
-import 'package:takemeals/screens/auth/widgets/social_button.dart';
 import 'package:takemeals/utils/constants.dart';
 import 'package:takemeals/widgets/welcome_text.dart';
 
