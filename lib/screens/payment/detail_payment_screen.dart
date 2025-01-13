@@ -1,14 +1,17 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:midtrans_sdk/midtrans_sdk.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart' as dot_env;
 import 'package:provider/provider.dart';
 import 'package:takemeals/models/order_model.dart';
 import 'package:takemeals/models/product_model.dart';
 import 'package:takemeals/providers/order_provider.dart';
 import 'package:takemeals/providers/user_provider.dart';
-import 'package:takemeals/screens/payment/payment_confirmed_screen.dart';
+import 'package:takemeals/services/token_service.dart';
 import 'package:takemeals/utils/constants.dart';
 
-class DetailPaymentScreen extends StatelessWidget {
+class DetailPaymentScreen extends StatefulWidget {
   final Product product;
   final int orderQuantity;
 
@@ -19,11 +22,115 @@ class DetailPaymentScreen extends StatelessWidget {
   }) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
-    final orderProvider = Provider.of<OrderProvider>(context);
-    final userProvider = Provider.of<UserProvider>(context);
+  State<DetailPaymentScreen> createState() => _DetailPaymentScreenState();
+}
 
-    final totalPrice = product.price! * orderQuantity;
+class _DetailPaymentScreenState extends State<DetailPaymentScreen> {
+  late final MidtransSDK? _midtrans;
+  bool _isProcessing = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _initMidtrans();
+  }
+
+  void _initMidtrans() async {
+    _midtrans = await MidtransSDK.init(
+      config: MidtransConfig(
+        clientKey: dot_env.dotenv.env['MIDTRANS_CLIENT_KEY'] ?? "",
+        merchantBaseUrl: dot_env.dotenv.env['BASE_URL'] ?? "",
+        colorTheme: ColorTheme(
+          colorPrimary: Colors.blue,
+          colorPrimaryDark: Colors.blue,
+          colorSecondary: Colors.blue,
+        ),
+      ),
+    );
+    _midtrans?.setUIKitCustomSetting(
+      skipCustomerDetailsPages: true,
+    );
+
+    _midtrans?.setTransactionFinishedCallback((result) {
+      print("Transaction Result: ${result.toJson()}");
+
+      if (result.isTransactionCanceled) {
+        _showToast("Transaction Canceled", true);
+      } else if (result.transactionStatus ==
+              TransactionResultStatus.settlement ||
+          result.transactionStatus == TransactionResultStatus.capture) {
+        _showToast("Transaction Completed", false);
+        _processOrder(
+          result.paymentType ?? "Midtrans",
+        );
+      } else {
+        _showToast("Transaction Failed", true);
+      }
+    });
+  }
+
+  void _processOrder(String paymentMethod) async {
+    final orderProvider = Provider.of<OrderProvider>(context, listen: false);
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+
+    final order = Order(
+      userId: userProvider.user!.id,
+      productId: widget.product.id,
+      quantity: widget.orderQuantity,
+      totalPrice: widget.product.price! * widget.orderQuantity,
+      paymentMethod: paymentMethod,
+    );
+
+    await orderProvider.addOrder(context, order);
+  }
+
+  void _showToast(String msg, bool isError) {
+    Fluttertoast.showToast(
+      msg: msg,
+      toastLength: Toast.LENGTH_LONG,
+      gravity: ToastGravity.BOTTOM,
+      backgroundColor: isError ? Colors.red : Colors.green,
+      textColor: Colors.white,
+    );
+  }
+
+  void _startPayment() async {
+    if (_midtrans == null) {
+      _showToast("Midtrans SDK not initialized", true);
+      return;
+    }
+
+    setState(() {
+      _isProcessing = true;
+    });
+
+    final result =
+        await TokenService().getToken(widget.product, widget.orderQuantity);
+
+    if (result.isRight()) {
+      String? token = result.fold((l) => null, (r) => r.token);
+
+      if (token == null) {
+        _showToast('Failed to retrieve token', true);
+        setState(() {
+          _isProcessing = false;
+        });
+        return;
+      }
+
+      _midtrans?.startPaymentUiFlow(token: token);
+    } else {
+      _showToast('Transaction Failed', true);
+    }
+
+    setState(() {
+      _isProcessing = false;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final totalPrice = widget.product.price! * widget.orderQuantity;
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -66,7 +173,7 @@ class DetailPaymentScreen extends StatelessWidget {
                                 fontWeight: FontWeight.bold, fontSize: 16),
                           ),
                           Text(
-                            '${product.partner!.openAt!} - ${product.partner!.closeAt!}',
+                            '${widget.product.partner!.openAt!} - ${widget.product.partner!.closeAt!}',
                             style: TextStyle(color: Colors.black, fontSize: 16),
                           ),
                         ],
@@ -89,7 +196,7 @@ class DetailPaymentScreen extends StatelessWidget {
                           SizedBox(
                             width: 280,
                             child: Text(
-                              product.partner!.address!,
+                              widget.product.partner!.address!,
                               style: TextStyle(
                                   fontWeight: FontWeight.bold, fontSize: 16),
                             ),
@@ -150,7 +257,7 @@ class DetailPaymentScreen extends StatelessWidget {
                     ),
                     child: Center(
                       child: Text(
-                        '${orderQuantity}x',
+                        '${widget.orderQuantity}x',
                         style: TextStyle(
                             fontWeight: FontWeight.bold, fontSize: 18),
                       ),
@@ -160,12 +267,12 @@ class DetailPaymentScreen extends StatelessWidget {
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
-                    product.name!,
+                    widget.product.name!,
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                   ),
                 ),
                 Text(
-                  'Rp. ${product.price}',
+                  'Rp. ${widget.product.price}',
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                 ),
               ],
@@ -178,7 +285,7 @@ class DetailPaymentScreen extends StatelessWidget {
                   style: TextStyle(color: Colors.black54, fontSize: 16),
                 ),
                 Text(
-                  'Rp. ${product.price! * orderQuantity}',
+                  'Rp. ${widget.product.price! * widget.orderQuantity}',
                   style: TextStyle(color: Colors.black54, fontSize: 16),
                 ),
               ],
@@ -217,31 +324,19 @@ class DetailPaymentScreen extends StatelessWidget {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: () {
-                  orderProvider.addOrder(context, Order(
-                    userId: userProvider.user!.id,
-                    productId: product.id,
-                    quantity: orderQuantity,
-                    totalPrice: totalPrice,
-                    paymentMethod: 'QRIS',
-                  ));
-                },
+                onPressed: _startPayment,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: primaryColor,
                   padding: EdgeInsets.symmetric(horizontal: 24),
                 ),
-                child: orderProvider.isFetching
-                    ? SizedBox(
-                        height: 24,
-                        width: 24,
-                      child: const CircularProgressIndicator(
-                          valueColor: AlwaysStoppedAnimation(Colors.white),
-                        ),
-                    )
+                child: _isProcessing
+                    ? const CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation(Colors.white),
+                      )
                     : const Text(
                         'Pay Now',
                         style: TextStyle(
-                          fontSize: 16,
+                          fontSize: 18,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
