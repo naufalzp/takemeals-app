@@ -74,6 +74,27 @@ class OrderProvider with ChangeNotifier {
     }
   }
 
+  Future<void> confirmOrder(String orderNumber) async {
+    _isFetching = true;
+    notifyListeners();
+    try {
+      final response = await apiService.post('confirmOrder/${orderNumber}', {});
+      if (response.statusCode == 200) {
+        final confirmedOrder = Order.fromJson(json.decode(response.body)['data']);
+        final index = _orders.indexWhere((order) => order.id == confirmedOrder.id);
+        if (index != -1) {
+          _orders[index] = confirmedOrder;
+          notifyListeners();
+        }
+      }
+    } catch (e) {
+      print('Failed to confirm order: $e');
+    } finally {
+      _isFetching = false;
+      notifyListeners();
+    }
+  }
+
   Future<void> updateOrder(Order order) async {
     _isFetching = true;
     notifyListeners();
