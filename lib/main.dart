@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart' as dot_env;
 import 'package:provider/provider.dart';
 import 'package:takemeals/providers/order_provider.dart';
 import 'package:takemeals/providers/product_provider.dart';
@@ -9,7 +10,9 @@ import 'package:takemeals/utils/entrypoint.dart';
 import 'package:takemeals/utils/shared_preferences_helper.dart';
 import 'package:takemeals/utils/constants.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await dot_env.dotenv.load(fileName: ".env");
   runApp(MainApp());
 }
 
