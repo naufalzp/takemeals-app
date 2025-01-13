@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:takemeals/providers/order_provider.dart';
 import 'package:takemeals/screens/order/widgets/order_card.dart';
-import 'package:takemeals/utils/constants.dart';
 
 class OrderScreen extends StatelessWidget {
   const OrderScreen({super.key});
