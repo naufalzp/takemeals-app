@@ -3,8 +3,8 @@ import 'package:http/http.dart' as http;
 import 'package:takemeals/utils/shared_preferences_helper.dart';
 
 class ApiService {
-  final String baseUrl = 'http://10.0.2.2:8000/api/v1';
-  // final String baseUrl = 'https://f183-103-246-107-3.ngrok-free.app/api/v1';
+  // final String baseUrl = 'http://10.0.2.2:8000/api/v1';
+  final String baseUrl = 'https://takemeals-api-vw5qz.ondigitalocean.app/api/v1';
 
   Future<http.Response> get(String endpoint) async {
     final String? token = await SharedPreferencesHelper.getAccessToken();
