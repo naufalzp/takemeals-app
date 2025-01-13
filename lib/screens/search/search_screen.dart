@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:provider/provider.dart';
+import 'package:takemeals/models/product_model.dart';
+import 'package:takemeals/providers/product_provider.dart';
+import 'package:takemeals/screens/details/details_screen.dart';
 import 'package:takemeals/utils/constants.dart';
 import 'package:takemeals/widgets/skeleton/big_card_skeleton.dart';
 import 'package:takemeals/widgets/cards/big/restaurant_info_big_card.dart';
@@ -13,6 +17,7 @@ class SearchScreen extends StatefulWidget {
 }
 
 class _SearchScreenState extends State<SearchScreen> {
+  String _searchQuery = '';
   bool _showSearchResult = false;
   bool _isLoading = true;
 
@@ -26,20 +31,13 @@ class _SearchScreenState extends State<SearchScreen> {
     });
   }
 
-  void showResult() {
-    setState(() {
-      _isLoading = true;
-    });
-    Future.delayed(const Duration(seconds: 1), () {
-      setState(() {
-        _showSearchResult = true;
-        _isLoading = false;
-      });
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
+    final productProvider = Provider.of<ProductProvider>(context);
+    final List<Product> filteredProducts = productProvider.products
+        .where((product) =>
+            product.name!.toLowerCase().contains(_searchQuery.toLowerCase()))
+        .toList();
     return Scaffold(
       body: SafeArea(
         child: Padding(
@@ -50,34 +48,63 @@ class _SearchScreenState extends State<SearchScreen> {
               const SizedBox(height: defaultPadding),
               Text('Search', style: Theme.of(context).textTheme.headlineMedium),
               const SizedBox(height: defaultPadding),
-              const SearchForm(),
-              const SizedBox(height: defaultPadding),
-              Text(_showSearchResult ? "Search Results" : "Top Restaurants",
-                  style: Theme.of(context).textTheme.titleLarge),
-              const SizedBox(height: defaultPadding),
-              Expanded(
-                child: ListView.builder(
-                  itemCount: _isLoading ? 2 : 5, //5 is demo length of your data
-                  itemBuilder: (context, index) => Padding(
-                    padding: const EdgeInsets.only(bottom: defaultPadding),
-                    child: _isLoading
-                        ? const BigCardSkeleton()
-                        : RestaurantInfoBigCard(
-                            // Images are List<String>
-                            images: demoBigImages..shuffle(),
-                            name: "McDonald's",
-                            rating: 4.3,
-                            numOfRating: 200,
-                            deliveryTime: 25,
-                            foodType: const [
-                              "Chinese",
-                              "American",
-                              "Deshi food"
-                            ],
-                            press: () {},
-                          ),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: TextField(
+                  onChanged: (value) {
+                    setState(() {
+                      _searchQuery = value;
+                    });
+                  },
+                  decoration: InputDecoration(
+                    prefixIcon: const Icon(Icons.search),
+                    hintText: 'Search on takemeals...',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8.0),
+                    ),
                   ),
                 ),
+              ),
+              const SizedBox(height: defaultPadding),
+              Expanded(
+                child: filteredProducts.isEmpty
+                    ? Center(
+                        child: Text(
+                          _searchQuery.isEmpty
+                              ? 'No products available.'
+                              : 'No products match your search.',
+                          style: Theme.of(context).textTheme.bodyLarge,
+                        ),
+                      )
+                    : ListView.builder(
+                        itemCount: _isLoading ? 5 : filteredProducts.length,
+                        itemBuilder: (context, index) => Padding(
+                          padding:
+                              const EdgeInsets.only(bottom: defaultPadding),
+                          child: _isLoading
+                              ? const BigCardSkeleton()
+                              : RestaurantInfoBigCard(
+                                  // Images are List<String>
+                                  image: filteredProducts[index].image!,
+                                  name: filteredProducts[index].name!,
+                                  rating: 4.3,
+                                  location:
+                                      filteredProducts[index].partner!.address!,
+                                  expiredHour:
+                                      filteredProducts[index].expired ?? 25,
+                                  press: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => DetailsScreen(
+                                          product: filteredProducts[index],
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
+                        ),
+                      ),
               ),
             ],
           ),
@@ -85,52 +112,10 @@ class _SearchScreenState extends State<SearchScreen> {
       ),
     );
   }
-}
-
-class SearchForm extends StatefulWidget {
-  const SearchForm({super.key});
 
   @override
-  State<SearchForm> createState() => _SearchFormState();
-}
-
-class _SearchFormState extends State<SearchForm> {
-  final _formKey = GlobalKey<FormState>();
-  @override
-  Widget build(BuildContext context) {
-    return Form(
-      key: _formKey,
-      child: TextFormField(
-        onChanged: (value) {
-          // get data while typing
-          // if (value.length >= 3) showResult();
-        },
-        onFieldSubmitted: (value) {
-          if (_formKey.currentState!.validate()) {
-            // If all data are correct then save data to out variables
-            _formKey.currentState!.save();
-
-            // Once user pree on submit
-          } else {}
-        },
-        validator: requiredValidator.call,
-        style: Theme.of(context).textTheme.labelLarge,
-        textInputAction: TextInputAction.search,
-        decoration: InputDecoration(
-          hintText: "Search on foodly",
-          contentPadding: kTextFieldPadding,
-          prefixIcon: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: SvgPicture.asset(
-              'assets/icons/search.svg',
-              colorFilter: const ColorFilter.mode(
-                bodyTextColor,
-                BlendMode.srcIn,
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
+  void dispose() {
+    super.dispose();
+    _searchQuery = '';
   }
 }
