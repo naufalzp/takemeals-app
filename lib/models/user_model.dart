@@ -3,7 +3,7 @@ class User {
   String? name;
   String? email;
   String? phone;
-  int? isPartner;
+  bool? isPartner;
   DateTime? emailVerifiedAt;
   DateTime? createdAt;
   DateTime? updatedAt;
