@@ -14,7 +14,7 @@ class BigCardImage extends StatelessWidget {
       decoration: BoxDecoration(
         borderRadius: const BorderRadius.all(Radius.circular(12)),
         image: DecorationImage(
-          image: NetworkImage(image),
+            image: AssetImage(image),
           fit: BoxFit.cover,
         ),
       ),

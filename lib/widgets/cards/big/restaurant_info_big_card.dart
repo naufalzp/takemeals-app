@@ -27,7 +27,17 @@ class RestaurantInfoBigCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          BigCardImage(image: image),         
+          Container(
+            height: 200,
+            width: double.infinity,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.all(Radius.circular(12)),
+              image: DecorationImage(
+                image: NetworkImage(image),
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
           const SizedBox(height: defaultPadding / 2),
           Text(name, style: Theme.of(context).textTheme.titleLarge),
           const SizedBox(height: defaultPadding / 4),
@@ -51,7 +61,7 @@ class RestaurantInfoBigCard extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               Text(
-                 "Expired in: $expiredHour hour",
+                "Expired in: $expiredHour hour",
                 style: Theme.of(context).textTheme.labelSmall,
               ),
             ],
