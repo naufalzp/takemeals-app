@@ -54,19 +54,18 @@ class LoginScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: defaultPadding),
-              kOrText,
-              const SizedBox(height: defaultPadding * 1.5),
+              // kOrText,
+              // const SizedBox(height: defaultPadding * 1.5),
 
-              // Google
-              SocialButton(
-                press: () {},
-                text: "Login with Google",
-                color: const Color(0xFF4285F4),
-                icon: SvgPicture.asset(
-                  'assets/icons/google.svg',
-                ),
-              ),
-              const SizedBox(height: defaultPadding),
+              // // Google
+              // SocialButton(
+              //   press: () {},
+              //   text: "Login with Google",
+              //   color: const Color(0xFF4285F4),
+              //   icon: SvgPicture.asset(
+              //     'assets/icons/google.svg',
+              //   ),
+              // ),
             ],
           ),
         ),
