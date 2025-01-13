@@ -1,13 +1,14 @@
-
 import 'package:flutter/material.dart';
 import 'package:takemeals/models/order_model.dart';
+import 'package:takemeals/screens/order/qr_code_screen.dart';
 import 'package:takemeals/utils/constants.dart';
 import 'package:takemeals/utils/entrypoint.dart';
 
 class PaymentConfirmedScreen extends StatelessWidget {
   final Order order;
 
-  const PaymentConfirmedScreen({Key? key, required this.order}) : super(key: key);
+  const PaymentConfirmedScreen({Key? key, required this.order})
+      : super(key: key);
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -51,7 +52,10 @@ class PaymentConfirmedScreen extends StatelessWidget {
             // Confirmation Text
             Text(
               'Payment Confirmed',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black),
+              style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black),
             ),
             SizedBox(height: 8),
             Text(
@@ -81,7 +85,9 @@ class PaymentConfirmedScreen extends StatelessWidget {
                   _buildReceiptRow('Order Number', order.orderNumber!),
                   _buildReceiptRow('Name', order.user!.name!),
                   _buildReceiptRow('Payment Method', order.paymentMethod!),
-                  _buildReceiptRow('Date', '${order.createdAt!.day}-${order.createdAt!.month}-${order.createdAt!.year}'),
+                  _buildReceiptRow('Date',
+                      '${order.createdAt!.day}-${order.createdAt!.month}-${order.createdAt!.year}'),
+                  _buildReceiptRow('Product', order.product!.name!),
                   _buildReceiptRow('Amount', 'Rp ${order.totalPrice}'),
                 ],
               ),
@@ -91,7 +97,13 @@ class PaymentConfirmedScreen extends StatelessWidget {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: () {},
+                onPressed: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => QrCodeScreen(order: order),
+                    ),
+                  );
+                },
                 child: Text(
                   'Show QR',
                   style: TextStyle(
