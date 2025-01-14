@@ -10,6 +10,7 @@ import 'package:takemeals/providers/order_provider.dart';
 import 'package:takemeals/providers/user_provider.dart';
 import 'package:takemeals/services/token_service.dart';
 import 'package:takemeals/utils/constants.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class DetailPaymentScreen extends StatefulWidget {
   final Product product;
@@ -128,6 +129,14 @@ class _DetailPaymentScreenState extends State<DetailPaymentScreen> {
     });
   }
 
+  Future<void> launchMaps() async {
+    final Uri _url = Uri.parse(
+        'https://www.google.com/maps/search/?api=1&query=${widget.product.partner!.latitude},${widget.product.partner!.longitude}');
+    if (!await launchUrl(_url)) {
+      throw Exception('Could not launch $_url');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final totalPrice = widget.product.price! * widget.orderQuantity;
@@ -214,7 +223,7 @@ class _DetailPaymentScreenState extends State<DetailPaymentScreen> {
                               padding:
                                   const EdgeInsets.symmetric(horizontal: 16),
                               alignment: Alignment.center,
-                              onPressed: () {},
+                              onPressed: launchMaps,
                               child: const Row(
                                 children: [
                                   Icon(Icons.near_me_rounded,
@@ -299,7 +308,7 @@ class _DetailPaymentScreenState extends State<DetailPaymentScreen> {
                   style: TextStyle(color: Colors.black54, fontSize: 16),
                 ),
                 Text(
-                  'Rp 1.000',
+                  ' R̶p̶ ̶1̶0̶0̶0̶ Rp 0',
                   style: TextStyle(color: Colors.black54, fontSize: 16),
                 ),
               ],
